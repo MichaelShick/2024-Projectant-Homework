@@ -1,5 +1,3 @@
-
-// the server side
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,48 +8,94 @@
 #define IP "127.0.0.1"
 #define PORT 5566
 #define BUFFER_SIZE 1024
+#define MAX_CLIENTS 100
 
-void *handle_client(void *client_socket) {
-    int client_sock = *(int*)client_socket;
+typedef struct {
+    int sock;
+    char name[BUFFER_SIZE];
+} client_t;
+
+client_t *clients[MAX_CLIENTS];
+pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void add_client(client_t *client) {
+    pthread_mutex_lock(&clients_mutex);
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        if (clients[i] == NULL) {
+            clients[i] = client;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&clients_mutex);
+}
+
+void remove_client(client_t *client) {
+    pthread_mutex_lock(&clients_mutex);
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        if (clients[i] == client) {
+            clients[i] = NULL;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&clients_mutex);
+}
+
+void broadcast_message(char *message, client_t *sender) {
+    pthread_mutex_lock(&clients_mutex);
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        if (clients[i] != NULL && clients[i] != sender) {
+            send(clients[i]->sock, message, strlen(message), 0);
+        }
+    }
+    pthread_mutex_unlock(&clients_mutex);
+}
+
+void *handle_client(void *arg) {
+    client_t *client = (client_t*)arg;
     char buffer[BUFFER_SIZE];
-    char client_name[BUFFER_SIZE];
     int n;
 
     // Receive the client's name
-    bzero(client_name, BUFFER_SIZE);
-    if (recv(client_sock, client_name, BUFFER_SIZE, 0) <= 0) {
+    bzero(client->name, BUFFER_SIZE);
+    if (recv(client->sock, client->name, BUFFER_SIZE, 0) <= 0) {
         perror("[-]Name receive error");
-        close(client_sock);
+        close(client->sock);
+        remove_client(client);
+        free(client);
         pthread_exit(NULL);
     }
-    printf("[+]Client connected with name: %s\n", client_name);
+    printf("[+]Client connected with name: %s\n", client->name);
+
+    char welcome_message[BUFFER_SIZE];
+    snprintf(welcome_message, BUFFER_SIZE, "[%s has joined the chat]\n", client->name);
+    broadcast_message(welcome_message, client);
 
     while (1) {
-
         bzero(buffer, BUFFER_SIZE);
-        if (recv(client_sock, buffer, BUFFER_SIZE, 0) <= 0) {
+        if (recv(client->sock, buffer, BUFFER_SIZE, 0) <= 0) {
             perror("[-]Receive error");
-            close(client_sock);
+            close(client->sock);
+            remove_client(client);
+            free(client);
             pthread_exit(NULL);
         }
 
         if (strcmp(buffer, "exit") == 0) {
-            printf("[+]Client %s disconnected.\n\n", client_name);
-            close(client_sock);
-            pthread_exit(NULL);
-        }
-        else {
-            printf("%s: %s\n", client_name, buffer);
-        }
-        if (strcmp(buffer, "exit") == 0) {
-            printf("[+]Client %s disconnected.\n\n", client_name);
-            close(client_sock);
+            printf("[+]Client %s disconnected.\n\n", client->name);
+            close(client->sock);
+            remove_client(client);
+            free(client);
+
+            char exit_message[BUFFER_SIZE];
+            snprintf(exit_message, BUFFER_SIZE, "[%s has left the chat]\n", client->name);
+            broadcast_message(exit_message, client);
             pthread_exit(NULL);
         }
 
-        bzero(buffer, BUFFER_SIZE);
-        strcpy(buffer, "Message received.");
-        send(client_sock, buffer, strlen(buffer), 0);
+        char message[BUFFER_SIZE];
+        snprintf(message, BUFFER_SIZE, "%s: %s\n", client->name, buffer);
+        printf("%s", message);
+        broadcast_message(message, client);
     }
 }
 
@@ -95,9 +139,14 @@ int main() {
             continue;
         }
 
-        if (pthread_create(&tid, NULL, handle_client, &client_sock) != 0) {
+        client_t *client = (client_t *)malloc(sizeof(client_t));
+        client->sock = client_sock;
+        add_client(client);
+
+        if (pthread_create(&tid, NULL, handle_client, (void*)client) != 0) {
             perror("[-]Thread creation error");
             close(client_sock);
+            free(client);
         }
         pthread_detach(tid); // Detach the thread to handle cleanup automatically
     }

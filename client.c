@@ -1,19 +1,35 @@
-// the client side
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #define IP "127.0.0.1"
 #define PORT 5566
 #define BUFFER_SIZE 1024
+
+void *receive_messages(void *sock_ptr) {
+    int sock = *(int*)sock_ptr;
+    char buffer[BUFFER_SIZE];
+
+    while (1) {
+        bzero(buffer, BUFFER_SIZE);
+        if (recv(sock, buffer, BUFFER_SIZE, 0) < 0) {
+            perror("[-]Receive error");
+            close(sock);
+            exit(1);
+        }
+        printf("%s", buffer);
+    }
+}
 
 int main() {
     int sock;
     struct sockaddr_in addr;
     char buffer[BUFFER_SIZE];
     char name[BUFFER_SIZE];
+    pthread_t tid;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
@@ -41,28 +57,26 @@ int main() {
 
     send(sock, name, strlen(name), 0);
 
+    if (pthread_create(&tid, NULL, receive_messages, &sock) != 0) {
+        perror("[-]Thread creation error");
+        close(sock);
+        exit(1);
+    }
+    pthread_detach(tid); // Detach the thread to handle cleanup automatically
+
     while (1) {
         printf("Enter message: ");
         bzero(buffer, BUFFER_SIZE);
         fgets(buffer, BUFFER_SIZE, stdin);
         buffer[strcspn(buffer, "\n")] = 0; // Remove trailing newline
 
-        send(sock, buffer, strlen(buffer), 0);
         if (strcmp(buffer, "exit") == 0) {
-             sleep(1);
+            send(sock, buffer, strlen(buffer), 0);
+            sleep(1); // Allow some time for the server to process the exit message
             break;
-
         }
 
-
-
-        bzero(buffer, BUFFER_SIZE);
-        if (recv(sock, buffer, BUFFER_SIZE, 0) < 0) {
-            perror("[-]Receive error");
-            close(sock);
-            exit(1);
-        }
-        printf("Server: %s\n", buffer);
+        send(sock, buffer, strlen(buffer), 0);
     }
 
     close(sock);

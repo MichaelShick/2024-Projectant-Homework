@@ -53,6 +53,8 @@ void broadcast_message(char *message, client_t *sender) {
 void *handle_client(void *arg) {
     client_t *client = (client_t*)arg;
     char buffer[BUFFER_SIZE];
+    char message[BUFFER_SIZE];
+    char exit_message[BUFFER_SIZE];
     int n;
 
     // Receive the client's name
@@ -86,13 +88,15 @@ void *handle_client(void *arg) {
             remove_client(client);
             free(client);
 
-            char exit_message[BUFFER_SIZE];
+
+            bzero(exit_message, BUFFER_SIZE);
             snprintf(exit_message, BUFFER_SIZE, "[%s has left the chat]\n", client->name);
             broadcast_message(exit_message, client);
             pthread_exit(NULL);
         }
 
-        char message[BUFFER_SIZE];
+
+        bzero(message, BUFFER_SIZE);
         snprintf(message, BUFFER_SIZE, "%s: %s\n", client->name, buffer);
         printf("%s", message);
         broadcast_message(message, client);
@@ -104,6 +108,11 @@ int main() {
     struct sockaddr_in server_addr, client_addr;
     socklen_t addr_size;
     pthread_t tid;
+
+    if (pthread_mutex_init(&clients_mutex, NULL) != 0) {
+        perror("Mutex creation has failed\n");
+        return 1;
+    }
 
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock < 0) {

@@ -15,12 +15,25 @@ void *receive_messages(void *sock_ptr) {
 
     while (1) {
         bzero(buffer, BUFFER_SIZE);
-        if (recv(sock, buffer, BUFFER_SIZE, 0) < 0) {
+        int bytes_received = recv(sock, buffer, BUFFER_SIZE, 0);
+        if (bytes_received < 0) {
             perror("[-]Receive error");
             close(sock);
             exit(1);
+        } else if (bytes_received == 0) {
+            // Server disconnected
+            printf("Server disconnected.\n");
+            close(sock);
+            exit(1);
         }
+
+        // Clear the current input line and print the received message
+        printf("\r\033[K"); // Clear the current line
         printf("%s", buffer);
+
+        // Reprint the input prompt
+        printf("Enter message: ");
+        fflush(stdout); // Make sure "Enter message: " is printed immediately
     }
 }
 

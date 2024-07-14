@@ -1,0 +1,3 @@
+/home/aviv/CLionProjects/untitled10/build/CMakeFiles/untitled10.dir
+/home/aviv/CLionProjects/untitled10/build/CMakeFiles/edit_cache.dir
+/home/aviv/CLionProjects/untitled10/build/CMakeFiles/rebuild_cache.dir

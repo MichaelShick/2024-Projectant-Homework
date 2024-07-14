@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/untitled10.dir/server.c.o CMakeFiles/untitled10.dir/client.c.o CMakeFiles/untitled10.dir/server_main.c.o CMakeFiles/untitled10.dir/client_main.c.o -o untitled10 

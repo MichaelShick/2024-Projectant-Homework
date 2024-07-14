@@ -1,0 +1,6 @@
+# ninja log v6
+1	290	1720700533233890128	CMakeFiles/untitled10.dir/server.c.o	dd5fa25eb15ddeb9
+291	452	1720700533522894196	CMakeFiles/untitled10.dir/client.c.o	54abe50c010b1454
+456	588	1720700533687896518	CMakeFiles/untitled10.dir/server_main.c.o	c138a0be5ce9e04b
+589	752	1720700533820898390	CMakeFiles/untitled10.dir/client_main.c.o	ce873d3f873ff50a
+752	955	1720700533983900684	CMakeFiles/untitled10.dir/test.c.o	dfee42715cb4b26f

@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/untitled11.dir/main.c.o CMakeFiles/untitled11.dir/step3.c.o CMakeFiles/untitled11.dir/step2.c.o CMakeFiles/untitled11.dir/macro.c.o  -o untitled11 

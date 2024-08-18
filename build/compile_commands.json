@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/mnt/c/Users/aviv/CLionProjects/untitled11/build",
+  "command": "/usr/bin/cc   -g   -std=gnu11 -o CMakeFiles/untitled11.dir/main.c.o   -c /mnt/c/Users/aviv/CLionProjects/untitled11/main.c",
+  "file": "/mnt/c/Users/aviv/CLionProjects/untitled11/main.c"
+},
+{
+  "directory": "/mnt/c/Users/aviv/CLionProjects/untitled11/build",
+  "command": "/usr/bin/cc   -g   -std=gnu11 -o CMakeFiles/untitled11.dir/step3.c.o   -c /mnt/c/Users/aviv/CLionProjects/untitled11/step3.c",
+  "file": "/mnt/c/Users/aviv/CLionProjects/untitled11/step3.c"
+},
+{
+  "directory": "/mnt/c/Users/aviv/CLionProjects/untitled11/build",
+  "command": "/usr/bin/cc   -g   -std=gnu11 -o CMakeFiles/untitled11.dir/step2.c.o   -c /mnt/c/Users/aviv/CLionProjects/untitled11/step2.c",
+  "file": "/mnt/c/Users/aviv/CLionProjects/untitled11/step2.c"
+},
+{
+  "directory": "/mnt/c/Users/aviv/CLionProjects/untitled11/build",
+  "command": "/usr/bin/cc   -g   -std=gnu11 -o CMakeFiles/untitled11.dir/macro.c.o   -c /mnt/c/Users/aviv/CLionProjects/untitled11/macro.c",
+  "file": "/mnt/c/Users/aviv/CLionProjects/untitled11/macro.c"
+}
+]
